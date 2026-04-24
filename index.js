@@ -42,4 +42,15 @@ console.log("Usage: node index.js <add|list> [text]")
 			console.log(tasks);
 		}	
 	}
+	if (args[0] === "remove") {
+		const n = parseInt(args[1], 10)
+		let tasks = loadTasks()
+		if (Number.isNaN(n) || n < 1 || n > tasks.length) {
+			console.log("Invalid task number. Please pess a number between 1 and", tasks.length);
+			}else {
+			tasks.splice(n-1, 1)
+			saveTasks(tasks)
+			console.log(`Removed task ${n}`)
+		}
+	}
 }
