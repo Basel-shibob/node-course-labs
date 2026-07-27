@@ -69,7 +69,7 @@ async function run(){
 				if(tasks.length === 0) {
 					console.log("No tasks yet")
 				} else {
-					console.log("Invalid task number. Please pass a number between 1 and", tsaks.length)
+					console.log("Invalid task number. Please pass a number between 1 and", tasks.length)
 				}
 			} else {
 				tasks[n - 1].done = true;
