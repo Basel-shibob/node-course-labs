@@ -1,43 +1,11 @@
-const fs = require("node:fs").promises;
-const path = require("path");
-
-const FILE = path.join(__dirname, "tasks.json");
+const { readTasks, writeTasks } = require("./storage/fileStorage")
 
 const http = require("node:http");
-
-async function loadTasks() {
-	try {
-		const reads = await fs.readFile(FILE, "utf8")
-		return JSON.parse(reads)
-
-	} catch (err) {
-		if(err.code === "ENOENT"){
-			return []
-		}else {
-			console.error("Critical Error: ", err);
-			return []
-		}
-	}
-}
-
-async function saveTasks(task){
-	try {
-		const data = JSON.stringify(task, null, 2);
-		await fs.writeFile(FILE, data);
-
-		return true;
-	}catch(err) {
-		console.error("Failed to save task", err);
-
-		return false;
-	}
-};
-
 
 const server = http.createServer(async (req,res) => {
 	try{
 		const reqUrl = new URL(req.url, `http://${req.headers.host}`);
-		const tasks = await loadTasks();
+		const tasks = await readTasks();
 		
 		res.setHeader("Content-Type", "application/json");
 		
@@ -73,7 +41,7 @@ const server = http.createServer(async (req,res) => {
 					
 					const newTask = {id: tasks.length + 1, text: taskText, done: false};
 					tasks.push(newTask);					
-					await saveTasks(tasks);
+					await writeTasks(tasks);
 					
 					res.writeHead(200);
 					res.end(JSON.stringify({ message: "Task added", task: newTask }));
@@ -95,7 +63,9 @@ const server = http.createServer(async (req,res) => {
 		res.writeHead(404);
 		res.end(JSON.stringify( {error: "Route not found"} ));
 	} catch (err) {
-
+		console.error("Unhandled error:", err);
+		res.writeHead(500);
+		res.end(JSON.stringify( {error: "Internal Server Error"} ));
 	}
 	
 });
