@@ -2,8 +2,9 @@
   "name": "task-cli",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server-express.js",
   "scripts": {
+    "start":"node server-express.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
