@@ -1,3 +1,4 @@
+const express = require("express");
 const {
   getTasks,
   getTaskByID,
@@ -6,113 +7,41 @@ const {
   deleteTask,
 } = require("./services/taskService");
 
-const http = require("node:http");
+const app = express();
 
-const server = http.createServer(async (req, res) => {
-  try {
-    const reqUrl = new URL(req.url, `http://${req.headers.host}`);
-    const parts = reqUrl.pathname.split("/").filter(Boolean);
-    res.setHeader("Content-Type", "application/json");
+app.use(express.json())
 
-    // (Routing)
-    if (req.method === "GET" && reqUrl.pathname === "/") {
-      res.writeHead(200);
-      res.end(
-        JSON.stringify({
-          message: "Welcome to Task Server! Go to /tasks to see your list.",
-        })
-      );
-      return;
-    }
-    if (req.method === "GET" && reqUrl.pathname === "/tasks") {
-      const tasks = await getTasks();
-      console.log(tasks);
-      res.writeHead(200);
-      res.end(JSON.stringify(tasks));
-      return;
-    }
-    if (req.method === "GET" && parts[0] === "tasks" && parts[1]) {
-      const id = Number(parts[1]);
-      const task = await getTaskByID(id);
-      if (task === null) {
-        res.writeHead(404);
-        res.end(JSON.stringify({ error: "task not found" }));
-        return;
-      }
-      res.writeHead(200);
-      res.end(JSON.stringify({ task: task }));
-      return;
-    }
-    if (req.method === "POST" && reqUrl.pathname === "/tasks") {
-      let body = "";
+app.get("/tasks", async (req, rse) => {
+  const tasks = await getTasks();
+  rse.status(200).json({ tasks: tasks });
+});
 
-      req.on("data", (chunk) => {
-        body += chunk.toString();
-      });
-
-      req.on("end", async () => {
-        try {
-          const parsedBody = JSON.parse(body);
-          const taskText = parsedBody.text;
-          const newTask = await addTask({ text: taskText });
-          res.writeHead(200);
-          res.end(JSON.stringify({ message: "Task added", task: newTask }));
-        } catch (error) {
-          res.writeHead(400);
-          res.end(JSON.stringify({ error: error.message }));
-        }
-      });
-
-      return;
-    }
-    if (req.method === "DELETE" && parts[0] === "tasks" && parts[1]) {
-      const id = Number(parts[1]);
-      const removed = await deleteTask(id);
-      if (!removed) {
-        res.writeHead(404);
-        res.end(JSON.stringify({ error: "Not Found" }));
-        return;
-      }
-      res.writeHead(204);
-      res.end(JSON.stringify({ message: "No Content" }));
-      console.log(removed);
-      return;
-    }
-    if (req.method === "PATCH" && parts[0] === "tasks" && parts[1]) {
-      const id = Number(parts[1]);
-      let body = "";
-      req.on("data", (chunk) => {
-        body += chunk.toString();
-      });
-
-      req.on("end", async () => {
-        try {
-          const parsedBody = JSON.parse(body);
-          const updats = await updateTask(id, parsedBody);
-          if (!updats) {
-            res.writeHead(404);
-            res.end(JSON.stringify({ error: "task not found" }));
-            return;
-          }
-          res.writeHead(200);
-          res.end(JSON.stringify({ message: "updated", task: updats }));
-          return;
-        } catch (error) {
-          res.writeHead(400);
-          res.end(JSON.stringify({ error: error.message }));
-          return;
-        }
-      });
-      return;
-    }
-
-    res.writeHead(404);
-    res.end(JSON.stringify({ error: "Route not found" }));
-  } catch (err) {
-    console.error("Unhandled error:", err);
-    res.writeHead(500);
-    res.end(JSON.stringify({ error: "Internal Server Error" }));
+app.post("/tasks", async (req, res) =>{
+  const { text } = req.body;
+  if(!text) {
+    return res.status(400).json({error: "Bad request"});
   }
+  const newTask = await addTask({text});
+  return res.status(201).json({message: "Task created successfully !", newTask});
+});
+
+app.get("/tasks/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  const task = await getTaskByID(id);
+  res.status(200).json({ task });
+});
+
+app.delete("/tasks/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  const removedTask = await deleteTask(id);
+  res.status(200).json({ message: "Deleted !!", removedTask });
+});
+
+app.patch("/tasks/:id", async (req, res) =>{
+  const id = Number(req.params.id);
+  const updates = req.body;
+  const task = await updateTask(id, updates);
+  return res.status(200).json({message: "task updated !", task});
 });
 
 const port = 8080;
@@ -120,4 +49,4 @@ const handler = () => {
   console.log(`Server is listening on http://localhost:${port}`);
 };
 
-server.listen(port, handler);
+app.listen(port, handler);
