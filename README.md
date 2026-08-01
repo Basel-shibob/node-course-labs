@@ -22,6 +22,8 @@ task-cli/
 ├── public/ # Browser frontend (index.html, app.js, styles.css)
 ├── data/ # tasks.json (gitignored)
 └── logs/ # server.log (gitignored)
+├── sockets/
+│   └── taskSockets.js   # Bridges domain events -> Socket.IO broadcasts
 ## Architecture
 Three layers, each with a single responsibility:
 - **Routes** — HTTP request/response handling only
@@ -48,10 +50,24 @@ Introduced `fs/promises`, async/await, and manual routing.
 - Added stream-based request logging (`logger.js`)
 - Centralized error handling
 
-### Day 4 — Task Board Frontend (in progress)
-- Lab 1: Browser UI using `express.static` + REST (`fetch`) — no real-time
-  yet, demonstrates the limitation HTTP has (other tabs don't auto-update)
-- Lab 2+: Socket.IO for real-time updates *(coming next)*
+### Day 4 — Real-Time with Socket.IO ✅
+- Lab 1: Browser UI using `express.static` + REST (`fetch`) — proved the
+  gap: other tabs don't auto-update without a manual refresh
+- Lab 2: Attached Socket.IO to an explicit `httpServer` (not `app.listen`),
+  confirmed the WebSocket upgrade handshake
+- Lab 3: Decoupled the service from the transport — `services/taskEvents.js`
+  (a shared `EventEmitter`) lets `taskService.js` announce facts without
+  knowing Socket.IO exists; `sockets/taskSockets.js` bridges those events
+  to `io.emit(...)` broadcasts
+- Lab 4: Live Board — UI renders only from socket events, not from local
+  mutation calls, so every tab (including the one that made the change)
+  shows one consistent, server-confirmed state
+- Lab 5: Presence — live "N online" counter via connect/disconnect lifecycle
+  and `io.engine.clientsCount`
+
+**Architecture holdup, confirmed:** adding Socket.IO required zero changes
+to `routes/` or `storage/` — only three `emit()` calls inside the service
+and one new bridge file. Exactly what the Day 3 layering promised.
 
 ## Running Locally
 ```bash
