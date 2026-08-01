@@ -4,7 +4,7 @@ const listEl = document.getElementById("task-list");
 const emptyEl = document.getElementById("empty-state");
 const socket = io();
 
-socket.on("connect", ()=>{
+socket.on("connect", () => {
   console.log("connected as", socket.id);
 });
 
@@ -16,6 +16,10 @@ socket.on("task:updated", (task) => {
 });
 socket.on("task:deleted", (payload) => {
   loadTasks();
+});
+socket.on("presence:update", (data) => {
+  const presenceEl = document.getElementById("presence");
+  presenceEl.textContent = `${data.online} online`;
 });
 
 function renderTasks(tasks) {
