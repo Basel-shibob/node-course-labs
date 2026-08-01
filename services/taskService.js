@@ -1,4 +1,5 @@
 const { readTasks, writeTasks } = require("../storage/fileStorage");
+const taskEvents = require("./taskEvents")
 
 const getTasks = async () => {  
   const tasks = await readTasks();
@@ -19,7 +20,8 @@ const addTask = async (task) => {
   if(!task.title){ throw new Error("Text is required"); }
   const newTask = { id: Date.now(), title: task.title, done: false };
   tasks.push(newTask);
-  await writeTasks(tasks)
+  await writeTasks(tasks);
+  taskEvents.emit("task:created", newTask);
   return newTask;
 };
 
@@ -34,6 +36,7 @@ const updateTask = async (id, updates) => {
         task.done = updates.done
     }
     await writeTasks(tasks)
+    taskEvents.emit("task:updated", task)
     return task;
 }
 
@@ -43,6 +46,7 @@ const deleteTask = async (id) => {
     if(taskIndex === -1) {return null}
     const removed = tasks.splice(taskIndex, 1)[0];
     await writeTasks(tasks);
+    taskEvents.emit("task:deleted", { id })
     return removed;
 }
 

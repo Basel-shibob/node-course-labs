@@ -4,19 +4,14 @@ const http = require("node:http")
 const { Server } = require("socket.io")
 const taskRoutes = require("./routes/taskRoutes");
 const { logRequest } = require("./logger");
+const initTaskSockets = require("./sockets/taskSockets");
 
 const app = express();
 const httpServer = http.createServer(app);
 const io = new Server(httpServer);
 const PORT = process.env.PORT || 3000;
 
-io.on("connection", (socket) => {
-  console.log("socket connected:", socket.id)
-
-  socket.on("disconnect", (reason) => {
-    console.log("socket disconnected:", socket.id, reason);
-  });
-})
+initTaskSockets(io);
 
 const handler = () => {
   console.log(`Server is listening on http://localhost:${PORT}`);
