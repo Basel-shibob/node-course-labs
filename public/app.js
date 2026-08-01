@@ -2,6 +2,11 @@ const formEl = document.getElementById("add-form");
 const inputEl = document.getElementById("title-input");
 const listEl = document.getElementById("task-list");
 const emptyEl = document.getElementById("empty-state");
+const socket = io();
+
+socket.on("connect", ()=>{
+  console.log("connected as", socket.id);
+});
 
 function renderTasks(tasks) {
   listEl.innerHTML = "";
