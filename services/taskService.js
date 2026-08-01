@@ -16,8 +16,8 @@ const getTaskByID = async (id) => {
 
 const addTask = async (task) => {
   const tasks = await readTasks();
-  if(!task.text){ throw new Error("Text is required"); }
-  const newTask = { id: Date.now(), text: task.text, done: false };
+  if(!task.title){ throw new Error("Text is required"); }
+  const newTask = { id: Date.now(), title: task.title, done: false };
   tasks.push(newTask);
   await writeTasks(tasks)
   return newTask;
@@ -27,8 +27,8 @@ const updateTask = async (id, updates) => {
     const tasks = await readTasks();
     const task = tasks.find((t) => t.id === id);
     if(!task){return null;}
-    if(updates.text){
-        task.text = updates.text;
+    if(updates.title){
+        task.title = updates.title;
     }
     if(typeof updates.done === 'boolean'){
         task.done = updates.done

@@ -15,11 +15,11 @@ router.get("/", async (req, rse) => {
 });
 
 router.post("/", async (req, res) => {
-  const { text } = req.body;
-  if (!text) {
+  const { title } = req.body;
+  if (!title) {
     return res.status(400).json({ error: "Bad request" });
   }
-  const newTask = await addTask({ text });
+  const newTask = await addTask({ title });
   return res
     .status(201)
     .json({ message: "Task created successfully !", newTask });

@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const taskRoutes = require("./routes/taskRoutes");
 const { logRequest } = require("./logger");
 
@@ -9,6 +10,8 @@ const handler = () => {
 };
 
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
+
 app.use((req, res, next) =>{
   logRequest(req);
   next()
