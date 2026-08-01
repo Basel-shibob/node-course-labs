@@ -8,6 +8,16 @@ socket.on("connect", ()=>{
   console.log("connected as", socket.id);
 });
 
+socket.on("task:created", (task) => {
+  loadTasks();
+});
+socket.on("task:updated", (task) => {
+  loadTasks();
+});
+socket.on("task:deleted", (payload) => {
+  loadTasks();
+});
+
 function renderTasks(tasks) {
   listEl.innerHTML = "";
 
@@ -58,7 +68,6 @@ formEl.addEventListener("submit", async (e) => {
   });
 
   inputEl.value = "";
-  await loadTasks();
 });
 
 async function toggleDone(id, done) {
@@ -67,14 +76,12 @@ async function toggleDone(id, done) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ done }),
   });
-  await loadTasks();
 }
 
 async function deleteTask(id) {
   await fetch(`/tasks/${id}`, {
     method: "DELETE",
   });
-  loadTasks();
 }
 
 loadTasks();
