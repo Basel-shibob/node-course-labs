@@ -10,6 +10,7 @@ frontend, and soon real-time updates via Socket.IO.
 - Vanilla JS frontend (`public/`)
 
 ## Project Structure
+```
 task-cli/
 ├── server-express.js # Entry point — wires everything together
 ├── logger.js # Stream-based request logging
@@ -24,6 +25,7 @@ task-cli/
 └── logs/ # server.log (gitignored)
 ├── sockets/
 │   └── taskSockets.js   # Bridges domain events -> Socket.IO broadcasts
+```
 ## Architecture
 Three layers, each with a single responsibility:
 - **Routes** — HTTP request/response handling only
@@ -77,9 +79,11 @@ npm start
 ```
 
 ## API Endpoints
+```
 | Method | Path         | Description       |
 |--------|--------------|--------------------|
 | GET    | /tasks       | List all tasks     |
 | POST   | /tasks       | Create a task      |
 | PATCH  | /tasks/:id   | Update a task      |
 | DELETE | /tasks/:id   | Delete a task      |
+```
