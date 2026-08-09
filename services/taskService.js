@@ -1,52 +1,33 @@
-const { readTasks, writeTasks } = require("../storage/fileStorage");
+const {getAll, getById, create, update, remove} = require("../storage/fileStorage");
 const taskEvents = require("./taskEvents")
 
 const getTasks = async () => {  
-  const tasks = await readTasks();
+  const tasks = await getAll()
   return tasks;
 };
 
 const getTaskByID = async (id) => {
-  const tasks = await readTasks();
-  const task = tasks.find((t) => t.id === id);
-  if (!task) {
-    return null;
-  }
-  return task;
+  return await getById(id);
 };
 
 const addTask = async (task) => {
-  const tasks = await readTasks();
-  if(!task.title){ throw new Error("Text is required"); }
-  const newTask = { id: Date.now(), title: task.title, done: false };
-  tasks.push(newTask);
-  await writeTasks(tasks);
+  if(!task.title){ throw new Error("Title is required"); }
+  const newTask = await create(task);
   taskEvents.emit("task:created", newTask);
   return newTask;
 };
 
 const updateTask = async (id, updates) => {
-    const tasks = await readTasks();
-    const task = tasks.find((t) => t.id === id);
-    if(!task){return null;}
-    if(updates.title){
-        task.title = updates.title;
-    }
-    if(typeof updates.done === 'boolean'){
-        task.done = updates.done
-    }
-    await writeTasks(tasks)
-    taskEvents.emit("task:updated", task)
-    return task;
+  const updated = await update(id,updates);
+  if(updated === null) return null; 
+  taskEvents.emit("task:updated", updated);
+  return updated;
 }
 
 const deleteTask = async (id) => {
-    const tasks = await readTasks();
-    const taskIndex = tasks.findIndex(t => t.id === id);
-    if(taskIndex === -1) {return null}
-    const removed = tasks.splice(taskIndex, 1)[0];
-    await writeTasks(tasks);
-    taskEvents.emit("task:deleted", { id })
+    const removed = await remove(id);
+    if(removed === null) return null;
+    taskEvents.emit("task:deleted", { id });
     return removed;
 }
 

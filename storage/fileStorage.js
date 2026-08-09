@@ -47,4 +47,47 @@ const writeTasks = async (task) => {
   }
 };
 
-module.exports = {ensureFile, readTasks, writeTasks}
+const getAll = async () =>{
+  return await readTasks();
+}
+
+const getById = async (id) =>{
+  const tasks = await readTasks();
+  const t = tasks.find((t) => String(t.id) === String(id))
+  if(!t) return null;
+  return t;
+}
+
+const create = async (data) =>{
+  const tasks = await readTasks();
+  const title = data.title
+  const newTask = { id: Date.now(), title: title, done: false}
+  tasks.push(newTask);
+  await writeTasks(tasks);
+  return newTask
+}
+
+const update = async (id, updates) =>{
+  const tasks = await readTasks();
+  const task = tasks.find((t) => String(t.id) === String(id));
+  if(!task) return null;
+  if(updates.title) {
+    task.title = updates.title;
+  }
+  if(typeof updates.done === 'boolean'){
+    task.done = updates.done;
+  }
+  await writeTasks(tasks);
+  return task
+}
+
+const remove = async (id) =>{
+  const tasks = await readTasks();
+  const taskIndex = tasks.findIndex(t => String(t.id) === String(id));
+  if(taskIndex === -1) return null;
+  const removed = tasks.splice(taskIndex, 1)[0];
+  await writeTasks(tasks);
+  return removed;
+}
+
+module.exports = {getAll, getById, create, update, remove}
