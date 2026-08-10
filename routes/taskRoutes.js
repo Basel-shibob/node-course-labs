@@ -26,19 +26,19 @@ router.post("/", async (req, res) => {
 });
 
 router.get("/:id", async (req, res) => {
-  const id = Number(req.params.id);
+  const id = req.params.id;
   const task = await getTaskByID(id);
   res.status(200).json({ task });
 });
 
 router.delete("/:id", async (req, res) => {
-  const id = Number(req.params.id);
+  const id = req.params.id;
   const removedTask = await deleteTask(id);
   res.status(200).json({ message: "Deleted !!", removedTask });
 });
 
 router.patch("/:id", async (req, res) => {
-  const id = Number(req.params.id);
+  const id = req.params.id;
   const updates = req.body;
   const task = await updateTask(id, updates);
   return res.status(200).json({ message: "task updated !", task });
