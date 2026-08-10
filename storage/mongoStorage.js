@@ -35,7 +35,7 @@ const create = async (data) => {
 
 const update = async (id, updates) => {
   if (!mongoose.isValidObjectId(id)) return null;
-  const updatedData = await Task.findByIdAndUpdate(id, updates, { new: true });
+  const updatedData = await Task.findByIdAndUpdate(id, updates, { returnDocument: "after" });
   if (!updatedData) return null;
   return toTask(updatedData);
 };
