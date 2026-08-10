@@ -6,7 +6,11 @@ const { Server } = require("socket.io");
 const taskRoutes = require("./routes/taskRoutes");
 const { logRequest } = require("./logger");
 const initTaskSockets = require("./sockets/taskSockets");
-const { connectDB } = require("./storage/db");
+const { connectDB, disconnectDB } = require("./storage/db");
+const { monitorEventLoopDelay } = require("node:perf_hooks");
+
+const eventLoopMonitor = monitorEventLoopDelay();
+eventLoopMonitor.enable();
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -30,10 +34,18 @@ app.use((req, res, next) => {
 app.use("/tasks", taskRoutes);
 
 app.get("/health", (req, res) => {
-  res.json({ status: "ok", uptime: process.uptime() });
+  res.json({
+    status: "ok",
+    uptime: process.uptime(),
+    eventLoopLagMs: eventLoopMonitor.mean / 1e6,
+  });
 });
 
 app.use((req, res) => res.status(404).json({ error: "Route not found" }));
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: "Something went wrong" });
+});
 
 const start = async () => {
   try {
@@ -49,3 +61,15 @@ const start = async () => {
 };
 
 start();
+
+const shutdown = async (signal) => {
+  console.log(`\n${signal} received — shutting down gracefully...`);
+  httpServer.close(async () => {
+    // close mongoose
+    await disconnectDB();
+    process.exit(0);
+  });
+};
+
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
