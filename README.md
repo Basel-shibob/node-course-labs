@@ -15,7 +15,7 @@ store behind a clean repository interface.
 
 ## Project Structure
 ```
-task-cli/
+task-api/
 ├── server-express.js     # Entry point — wires everything, /health, graceful shutdown
 ├── logger.js             # Stream-based request logging
 ├── nodemon.json          # Dev auto-restart config (ignores logs/, data/, public/)

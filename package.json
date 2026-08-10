@@ -1,5 +1,5 @@
 {
-  "name": "task-cli",
+  "name": "task-api",
   "version": "1.0.0",
   "description": "",
   "main": "server-express.js",
