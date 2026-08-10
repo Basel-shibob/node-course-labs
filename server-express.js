@@ -4,10 +4,12 @@ const path = require("path");
 const http = require("node:http");
 const { Server } = require("socket.io");
 const taskRoutes = require("./routes/taskRoutes");
-const { logRequest } = require("./logger");
 const initTaskSockets = require("./sockets/taskSockets");
 const { connectDB, disconnectDB } = require("./storage/db");
 const { monitorEventLoopDelay } = require("node:perf_hooks");
+const requestLogger = require("./middleware/requestLogger");
+const notFound = require("./middleware/notFound");
+const errorHandler = require("./middleware/errorHandler");
 
 const eventLoopMonitor = monitorEventLoopDelay();
 eventLoopMonitor.enable();
@@ -26,10 +28,7 @@ const handler = () => {
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use((req, res, next) => {
-  logRequest(req);
-  next();
-});
+app.use(requestLogger);
 
 app.use("/tasks", taskRoutes);
 
@@ -41,11 +40,8 @@ app.get("/health", (req, res) => {
   });
 });
 
-app.use((req, res) => res.status(404).json({ error: "Route not found" }));
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ error: "Something went wrong" });
-});
+app.use(notFound);
+app.use(errorHandler);
 
 const start = async () => {
   try {
@@ -54,7 +50,7 @@ const start = async () => {
   } catch (error) {
     console.error(
       "startup failed — could not connect to MongoDB, check MONGODB_URI in .env",
-      error.message
+      error.message,
     );
     process.exit(1);
   }

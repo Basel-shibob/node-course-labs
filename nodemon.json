@@ -4,7 +4,8 @@
         "routes",
         "services",
         "storage",
-        "sockets"
+        "sockets",
+        "middleware"
     ],
     "ext": "js,json",
     "ignore": [
